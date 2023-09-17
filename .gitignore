@@ -1,6 +1,7 @@
 */__pycache__/
 exp/
 build/
+logs/
 
 *.pyc
 *.so

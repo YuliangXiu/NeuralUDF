@@ -33,5 +33,8 @@ while [[ $# -gt 0 ]];do
   esac
 done
 
+getenv=True
+source /home/yxiu/miniconda3/bin/activate neuraludf
+
 CUDA_VISIBLE_DEVICES=${GPU} python exp_runner_blending.py --conf ./confs/udf_garment_blending.conf \
 --case ${CASE} --threshold 0.005 --resolution 128 --vis_ray --reg_weights_schedule --sparse_weight ${SPARSE_WEIGHT}

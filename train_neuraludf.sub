@@ -1,0 +1,15 @@
+executable = /home/yxiu/Code/NeuralUDF/bashs/bash_garment_blending.sh
+arguments = --gpu 0 --case $(MyArg1) -s 0.001
+
+error = /home/yxiu/Code/NeuralUDF/logs/train_$(MyArg1).err
+output = /home/yxiu/Code/NeuralUDF/logs/train_$(MyArg1).out
+log = /home/yxiu/Code/NeuralUDF/logs/train_$(MyArg1).log
+
+request_memory = 10000
+request_disk = 5G
+request_cpus = 6
+request_gpus = 1
+requirements = TARGET.CUDACapability > 7.5
+requirements = TARGET.CUDAGlobalMemoryMb > 10000
+
+queue MyArg1 from /home/yxiu/Code/NeuralUDF/train_lst.txt

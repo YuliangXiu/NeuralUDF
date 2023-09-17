@@ -60,7 +60,13 @@ class Dataset:
         self.camera_dict = camera_dict
         if self.dataset_name == 'dtu' or self.dataset_name == 'deepfashion3d':
             self.images_lis = sorted(glob(os.path.join(self.data_dir, 'image/*.png')))
+            if not os.path.exists(os.path.join(self.data_dir, 'mask')):
+                os.makedirs(os.path.join(self.data_dir, 'mask'), exist_ok=True)
+                images_np = np.stack([cv.imread(im_name, cv.IMREAD_UNCHANGED) for im_name in self.images_lis])
+                for idx, img_file in enumerate(self.images_lis):
+                    cv.imwrite(img_file.replace("/image/", "/mask/"), images_np[idx, :, :, -1])
             self.masks_lis = sorted(glob(os.path.join(self.data_dir, 'mask/*.png')))
+                
         elif self.dataset_name == 'bmvs':
             self.images_lis = sorted(glob(os.path.join(self.data_dir, 'blended_images/*.jpg')))
             self.masks_lis = sorted(glob(os.path.join(self.data_dir, 'masks/*.jpg')))
