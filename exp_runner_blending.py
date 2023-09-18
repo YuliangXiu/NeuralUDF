@@ -912,7 +912,7 @@ if __name__ == '__main__':
     elif args.mode == 'extract_udf_mesh':
         runner.extract_udf_mesh(resolution=args.resolution, world_space=True, dist_threshold_ratio=5.0)
     elif args.mode.startswith('validate_image'):
-        for idx in [0, 10, 20, 30, 40, 50, 60, 70]:
+        for idx in range(200):
             runner.validate(idx, resolution_level=1, only_color=True)
     elif args.mode == 'validate_fields':
         runner.validate_fields()
