@@ -147,15 +147,22 @@ class Runner:
 
         # Load checkpoint
         latest_model_name = None
+        
         if is_continue:
-            model_list_raw = os.listdir(os.path.join(self.base_exp_dir, 'checkpoints'))
-            model_list = []
-            for model_name in model_list_raw:
-                if model_name[-3:] == 'pth':
-                    # if model_name[-3:] == 'pth' and int(model_name[5:-4]) <= self.end_iter:
-                    model_list.append(model_name)
-            model_list.sort()
-            latest_model_name = model_list[-1]
+            
+            if not os.path.exists(os.path.join(self.base_exp_dir, 'checkpoints')):
+                os.makedirs(os.path.join(self.base_exp_dir, 'checkpoints'), exist_ok=True)
+                latest_model_name = os.path.join(self.base_exp_dir.replace("_ft", ""), 'checkpoints/ckpt_300000.pth')
+            else:
+                model_list_raw = os.listdir(os.path.join(self.base_exp_dir, 'checkpoints'))
+                
+                model_list = []
+                for model_name in model_list_raw:
+                    if model_name[-3:] == 'pth':
+                        # if model_name[-3:] == 'pth' and int(model_name[5:-4]) <= self.end_iter:
+                        model_list.append(model_name)
+                model_list.sort()
+                latest_model_name = model_list[-1]
 
         if latest_model_name is not None:
             logging.info('Find checkpoint: {}'.format(latest_model_name))
@@ -884,7 +891,7 @@ if __name__ == '__main__':
                         help='the schedule of regularization weights')
     parser.add_argument('--vis_ray', default=False, action="store_true", help='visualize the udf of a ray for debug')
     parser.add_argument('--gpu', type=int, default=0)
-    parser.add_argument('--resolution', type=int, default=128)
+    parser.add_argument('--resolution', type=int, default=512)
     parser.add_argument('--case', type=str, default='', help='the object name or index of a dataset')
 
     parser.add_argument('--learning_rate', type=float, default=0)
