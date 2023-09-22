@@ -36,26 +36,26 @@ done
 getenv=True
 source /home/yxiu/miniconda3/bin/activate neuraludf
 
-# CUDA_VISIBLE_DEVICES=${GPU} python exp_runner_blending.py --mode validate_image \
-# --conf ./confs/udf_garment_blending_mask_ft.conf \
-# --case ${CASE} --is_continue --resolution 512
-
-# CUDA_VISIBLE_DEVICES=${GPU} python exp_runner_blending.py --mode extract_udf_mesh \
-# --conf ./confs/udf_garment_blending_mask_ft.conf \
-# --case ${CASE} --is_continue --resolution 512
-
-# CUDA_VISIBLE_DEVICES=${GPU} python exp_runner_blending.py --mode validate_mesh \
-# --conf ./confs/udf_garment_blending_mask_ft.conf \
-# --case ${CASE} --is_continue --resolution 512
-
 CUDA_VISIBLE_DEVICES=${GPU} python exp_runner_blending.py --mode validate_image \
---conf ./confs/udf_garment_blending_mask.conf \
+--conf ./confs/udf_garment_blending_mask_ft.conf \
 --case ${CASE} --is_continue --resolution 512
 
 CUDA_VISIBLE_DEVICES=${GPU} python exp_runner_blending.py --mode extract_udf_mesh \
---conf ./confs/udf_garment_blending_mask.conf \
+--conf ./confs/udf_garment_blending_mask_ft.conf \
 --case ${CASE} --is_continue --resolution 512
 
 CUDA_VISIBLE_DEVICES=${GPU} python exp_runner_blending.py --mode validate_mesh \
---conf ./confs/udf_garment_blending_mask.conf \
+--conf ./confs/udf_garment_blending_mask_ft.conf \
 --case ${CASE} --is_continue --resolution 512
+
+# CUDA_VISIBLE_DEVICES=${GPU} python exp_runner_blending.py --mode validate_image \
+# --conf ./confs/udf_garment_blending_mask.conf \
+# --case ${CASE} --is_continue --resolution 512
+
+# CUDA_VISIBLE_DEVICES=${GPU} python exp_runner_blending.py --mode extract_udf_mesh \
+# --conf ./confs/udf_garment_blending_mask.conf \
+# --case ${CASE} --is_continue --resolution 512
+
+# CUDA_VISIBLE_DEVICES=${GPU} python exp_runner_blending.py --mode validate_mesh \
+# --conf ./confs/udf_garment_blending_mask.conf \
+# --case ${CASE} --is_continue --resolution 512

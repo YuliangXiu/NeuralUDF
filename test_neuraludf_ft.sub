@@ -1,4 +1,4 @@
-executable = /home/yxiu/Code/NeuralUDF/bashs/bash_garment_test.sh
+executable = /home/yxiu/Code/NeuralUDF/bashs/bash_garment_test_ft.sh
 arguments = --gpu 0 --case $(MyArg1)
 
 error = /home/yxiu/Code/NeuralUDF/logs/test_wmask_$(MyArg1).err
@@ -12,4 +12,4 @@ request_gpus = 1
 requirements = TARGET.CUDACapability > 7.5
 requirements = TARGET.CUDAGlobalMemoryMb > 10000
 
-queue MyArg1 from /home/yxiu/Code/NeuralUDF/train_lst.txt
+queue MyArg1 from /home/yxiu/Code/NeuralUDF/tmp_lst.txt

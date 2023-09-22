@@ -150,11 +150,13 @@ class Runner:
         
         if is_continue:
             
-            if not os.path.exists(os.path.join(self.base_exp_dir, 'checkpoints')):
-                os.makedirs(os.path.join(self.base_exp_dir, 'checkpoints'), exist_ok=True)
-                latest_model_name = os.path.join(self.base_exp_dir.replace("_ft", ""), 'checkpoints/ckpt_300000.pth')
+            ckpt_dir = os.path.join(self.base_exp_dir, 'checkpoints')
+            
+            if not os.path.exists(ckpt_dir) or len(os.listdir(ckpt_dir)) == 0:
+                os.makedirs(ckpt_dir, exist_ok=True)
+                latest_model_name = os.path.join(self.base_exp_dir.replace("_ft", ""), 'checkpoints/ckpt_400000.pth')
             else:
-                model_list_raw = os.listdir(os.path.join(self.base_exp_dir, 'checkpoints'))
+                model_list_raw = os.listdir(ckpt_dir)
                 
                 model_list = []
                 for model_name in model_list_raw:
@@ -472,8 +474,12 @@ class Runner:
             fd.write(res)
 
     def load_checkpoint(self, checkpoint_name):
-        checkpoint = torch.load(os.path.join(self.base_exp_dir, 'checkpoints', checkpoint_name),
-                                map_location=self.device)
+        
+        if os.path.exists(checkpoint_name) and checkpoint_name.endswith(".pth"):
+            ckpt_path = checkpoint_name
+        else:
+            ckpt_path = os.path.join(self.base_exp_dir, 'checkpoints', checkpoint_name)
+        checkpoint = torch.load(ckpt_path, map_location=self.device)
 
         self.nerf_outside.load_state_dict(checkpoint['nerf'])
         self.udf_network_fine.load_state_dict(checkpoint['udf_network_fine'])
