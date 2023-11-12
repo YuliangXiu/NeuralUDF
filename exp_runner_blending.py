@@ -147,17 +147,17 @@ class Runner:
 
         # Load checkpoint
         latest_model_name = None
-        
+
         if is_continue:
-            
+
             ckpt_dir = os.path.join(self.base_exp_dir, 'checkpoints')
-            
+
             if not os.path.exists(ckpt_dir) or len(os.listdir(ckpt_dir)) == 0:
                 os.makedirs(ckpt_dir, exist_ok=True)
                 latest_model_name = os.path.join(self.base_exp_dir.replace("_ft", ""), 'checkpoints/ckpt_400000.pth')
             else:
                 model_list_raw = os.listdir(ckpt_dir)
-                
+
                 model_list = []
                 for model_name in model_list_raw:
                     if model_name[-3:] == 'pth':
@@ -474,7 +474,7 @@ class Runner:
             fd.write(res)
 
     def load_checkpoint(self, checkpoint_name):
-        
+
         if os.path.exists(checkpoint_name) and checkpoint_name.endswith(".pth"):
             ckpt_path = checkpoint_name
         else:
@@ -631,6 +631,7 @@ class Runner:
         rays_d = rays_d.reshape(-1, 3).split(self.batch_size)
 
         out_rgb_fine = []
+        out_mask_fine = []
         out_rgb_pixel = []
         out_normal_fine = []
         out_depth = []
@@ -648,11 +649,14 @@ class Runner:
                                               cos_anneal_ratio=self.get_cos_anneal_ratio(),
                                               background_rgb=background_rgb)
 
+            weight_sum = render_out['weights'].sum(dim=-1, keepdim=True)
+
             feasible = lambda key: ((key in render_out) and (render_out[key] is not None))
 
             # if render_out['color_coarse'] is not None:
             if feasible('color'):
                 out_rgb_fine.append(render_out['color'].detach().cpu().numpy())
+                out_mask_fine.append(weight_sum.detach().cpu().numpy())
             if feasible('color_pixel'):
                 out_rgb_pixel.append(render_out['color_pixel'].detach().cpu().numpy())
             if feasible('depth'):
@@ -684,6 +688,7 @@ class Runner:
         img_fine = None
         if len(out_rgb_fine) > 0:
             img_fine = (np.concatenate(out_rgb_fine, axis=0).reshape([H, W, 3]) * 256).clip(0, 255)
+            mask_fine = (np.concatenate(out_mask_fine, axis=0).reshape([H, W, 1]) * 255).clip(0, 255)
         img_pixel = None
         if len(out_rgb_pixel) > 0:
             img_pixel = (np.concatenate(out_rgb_pixel, axis=0).reshape([H, W, 3]) * 256).clip(0, 255)
@@ -707,7 +712,7 @@ class Runner:
         if only_color:
             os.makedirs(os.path.join(self.base_exp_dir, 'novel_view'), exist_ok=True)
             cv.imwrite(os.path.join(self.base_exp_dir, 'novel_view',
-                                    'pred_{}.png'.format(idx)), img_fine)
+                                    'pred_{}.png'.format(idx)), np.concatenate([img_fine,mask_fine],axis=-1))
             cv.imwrite(os.path.join(self.base_exp_dir, 'novel_view',
                                     'gt_{}.png'.format(idx)),
                        self.dataset.image_at(idx, resolution_level=resolution_level))
@@ -756,7 +761,7 @@ class Runner:
         print(cv.imwrite(os.path.join(self.base_exp_dir, 'render', '{}.png'.format(out_idx)), img_fine.squeeze()))
         print(os.path.join(self.base_exp_dir, 'render', '{}.png'.format(out_idx)))
 
-    def validate_mesh(self, world_space=True, resolution=256, threshold=0.0):
+    def validate_mesh(self, world_space=True, resolution=512, threshold=0.0):
         bound_min = torch.tensor(self.dataset.object_bbox_min, dtype=torch.float32)
         bound_max = torch.tensor(self.dataset.object_bbox_max, dtype=torch.float32)
         vertices, triangles = self.renderer.extract_geometry(bound_min, bound_max, resolution=resolution,
@@ -773,7 +778,7 @@ class Runner:
 
         logging.info('End')
 
-    def extract_udf_mesh(self, world_space=False, resolution=256, dist_threshold_ratio=1.0):
+    def extract_udf_mesh(self, world_space=False, resolution=512, dist_threshold_ratio=1.0):
         if self.model_type == 'udf':
             func = self.udf_network_fine.udf
 
@@ -918,7 +923,7 @@ if __name__ == '__main__':
     elif args.mode == 'extract_udf_mesh':
         runner.extract_udf_mesh(resolution=args.resolution, world_space=True, dist_threshold_ratio=5.0)
     elif args.mode.startswith('validate_image'):
-        for idx in range(200):
+        for idx in [192,91]:
             runner.validate(idx, resolution_level=1, only_color=True)
     elif args.mode == 'validate_fields':
         runner.validate_fields()

@@ -1,10 +1,12 @@
 */__pycache__/
-exp/
 build/
 logs/
 
 *.pyc
 *.so
 *.o
+*.npy
 
 data
+metric
+exp

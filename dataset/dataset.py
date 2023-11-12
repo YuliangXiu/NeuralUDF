@@ -59,9 +59,9 @@ class Dataset:
         if not os.path.exists(os.path.join(self.data_dir, self.render_cameras_name)):
             self.render_cameras_name = "proj_mtx_all.npy"
             self.object_cameras_name = "proj_mtx_all.npy"
-            
+
         camera_dict = np.load(os.path.join(self.data_dir, self.render_cameras_name))
-        
+
         self.camera_dict = camera_dict
         if self.dataset_name == 'dtu' or self.dataset_name == 'deepfashion3d':
             self.images_lis = sorted(glob(os.path.join(self.data_dir, 'image/*.png')))
@@ -71,14 +71,15 @@ class Dataset:
                 for idx, img_file in enumerate(self.images_lis):
                     cv.imwrite(img_file.replace("/image/", "/mask/"), images_np[idx, :, :, -1])
             self.masks_lis = sorted(glob(os.path.join(self.data_dir, 'mask/*.png')))
-                
+
         elif self.dataset_name == 'bmvs':
             self.images_lis = sorted(glob(os.path.join(self.data_dir, 'blended_images/*.jpg')))
             self.masks_lis = sorted(glob(os.path.join(self.data_dir, 'masks/*.jpg')))
         self.n_images = len(self.images_lis)
 
-        self.images_np = np.stack([cv.imread(im_name) for im_name in self.images_lis]) / 256.0
-        self.masks_np = np.stack([((cv.imread(im_name)>0)*255).astype(np.uint8) for im_name in self.masks_lis]) / 256.0
+        self.images_np = np.stack([cv.imread(im_name) for im_name in self.images_lis]) / 255.0
+        self.masks_np = np.stack([cv.imread(im_name) for im_name in self.masks_lis]) / 255.0
+        self.images_np *= self.masks_np
 
         # world_mat is a projection matrix from world to image
         if self.render_cameras_name == "proj_mtx_all.npy":
@@ -87,7 +88,7 @@ class Dataset:
 
         else:
             self.world_mats_np = [camera_dict['world_mat_%d' % idx].astype(np.float32) for idx in range(self.n_images)]
-            
+
             # scale_mat: used for coordinate normalization, we assume the scene to render is inside a unit sphere at origin.
             self.scale_mats_np = [camera_dict['scale_mat_%d' % idx].astype(np.float32) for idx in range(self.n_images)]
 
@@ -136,7 +137,7 @@ class Dataset:
             object_scale_mat = np.eye(4)
         else:
             object_scale_mat = np.load(os.path.join(self.data_dir, self.object_cameras_name))['scale_mat_0']
-        
+
         object_bbox_min = np.linalg.inv(self.scale_mats_np[0]) @ object_scale_mat @ object_bbox_min[:, None]
         object_bbox_max = np.linalg.inv(self.scale_mats_np[0]) @ object_scale_mat @ object_bbox_max[:, None]
         self.object_bbox_min = object_bbox_min[:3, 0]
@@ -355,7 +356,7 @@ class Dataset:
         return near, far
 
     def image_at(self, idx, resolution_level):
-        img = cv.imread(self.images_lis[idx])
+        img = cv.imread(self.images_lis[idx], cv.IMREAD_UNCHANGED)
         return (cv.resize(img, (self.W // resolution_level, self.H // resolution_level))).clip(0, 255)
 
 
